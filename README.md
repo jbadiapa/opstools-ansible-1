@@ -97,12 +97,12 @@ Sensu package and performs some basic configuration tasks.
 
 ### Actions defined on the role
 
-Enable Sensu repository
-Ensure repoquery command is available
-Check for obsolete sensu package
-Remove obsolete sensu package
-Install sensu
-Configure rabbitmq on sensu
+- Enable Sensu repository
+- Ensure repoquery command is available
+- Check for obsolete sensu package
+- Remove obsolete sensu package
+- Install sensu
+- Configure rabbitmq on sensu
 
 
 ### Configuration
@@ -163,13 +163,13 @@ server.
 
 ### Actions defined on the role
 
-Generate openstack auth args for oschecks
-Configure sensu
-Fix sensu_oschecks
-Create sensu vhost on rabbitmq
-Configure rabbitmq permissions
-Ensure correct ownership on directories
-Ensure sensu is started and enabled at boot
+- Generate openstack auth args for oschecks
+- Configure sensu
+- Fix sensu_oschecks
+- Create sensu vhost on rabbitmq
+- Configure rabbitmq permissions
+- Ensure correct ownership on directories
+- Ensure sensu is started and enabled at boot
 
 
 ### Configuration
@@ -229,12 +229,12 @@ This role installs the Apache web server and associated modules.
 
 ### Actions defined on the role
 
-Install httpd
-Install httpd modules
-Allow apache proxy connections
-Ensure httpd configuration directory exists
-Ensure httpd configuration parts directory exists
-Enable httpd service
+- Install httpd
+- Install httpd modules
+- Allow apache proxy connections
+- Ensure httpd configuration directory exists
+- Ensure httpd configuration parts directory exists
+- Enable httpd service
 
 
 ### Configuration
@@ -275,11 +275,11 @@ Enable httpd service
 
 ### Actions defined on the role
 
-Install collectd
-Install collectd plugins
-Place write_graphite-config
-Enable collectd
-Set collectd_tcp_network_connect
+- Install collectd
+- Install collectd plugins
+- Place write_graphite-config
+- Enable collectd
+- Set collectd_tcp_network_connect
 
 
 ### Configuration
@@ -300,7 +300,7 @@ This role installs the libselinux-python package (required by Ansible).
 
 ### Actions defined on the role
 
-Install libselinux python
+- Install libselinux python
 
 
 ### Configuration
@@ -317,7 +317,7 @@ Ansible).
 
 ### Actions defined on the role
 
-Install libsemanage python
+- Install libsemanage python
 
 
 ### Configuration
@@ -334,9 +334,9 @@ will host Ops Tools services.
 
 ### Actions defined on the role
 
-Ensure opstools httpd config directory exists
-Install opstools httpd config file
-Register apache firewall  ports
+- Ensure opstools httpd config directory exists
+- Install opstools httpd config file
+- Register apache firewall  ports
 
 
 ### Configuration
@@ -391,7 +391,7 @@ This role enables the CentOS OpsTools SIG package repository.
 
 ### Actions defined on the role
 
-Install centos-opstools repository
+- Install centos-opstools repository
 
 
 ### Configuration
@@ -410,7 +410,7 @@ on RHEL systems.
 
 ### Actions defined on the role
 
-Install rdo repository configuration
+- Install rdo repository configuration
 
 
 ### Configuration
@@ -497,10 +497,10 @@ This role configures the Apache proxy for Kibana.
 
 ### Actions defined on the role
 
-Install kibana configuration for Apache
-Create kibana htpasswd file
-Secure htpasswd file
-Configure default redirect
+- Install kibana configuration for Apache
+- Create kibana htpasswd file
+- Secure htpasswd file
+- Configure default redirect
 
 
 ### Configuration
@@ -533,11 +533,11 @@ from the main `kibana` role.
 
 ### Actions defined on the role
 
-Enable kibana repository
-Install kibana package
-Ensure kibana configuration directory exists
-Create kibana configuration file
-Enable kibana service
+- Enable kibana repository
+- Install kibana package
+- Ensure kibana configuration directory exists
+- Create kibana configuration file
+- Enable kibana service
 
 
 
@@ -566,13 +566,13 @@ them to [Elasticsearch][].
 
 ### Actions defined on the role
 
-Install fluentd package
-Install fluentd plugins
-Ensure fluentd configuration directory exists
-Ensure fluentd config.d directory exists
-Create fluentd.conf
-Install fluentd certificate
-Activate fluentd service
+- Install fluentd package
+- Install fluentd plugins
+- Ensure fluentd configuration directory exists
+- Ensure fluentd config.d directory exists
+- Create fluentd.conf
+- Install fluentd certificate
+- Activate fluentd service
 
 
 ### Configuration
@@ -647,8 +647,8 @@ local syslog server to a Fluentd instance.
 
 ### Actions defined on the role
 
-Install fluentd rsyslog config
-Install fluentd syslog source
+- Install fluentd rsyslog config
+- Install fluentd syslog source
 
 
 ### Configuration
@@ -673,13 +673,13 @@ connections from other Fluentd clients.
 
 ### Actions defined on the role
 
-Install fluentd plugins (server)
-Set fluentd_port fact (non-ssl)
-Set fluentd_port fact (ssl)
-Install non-ssl aggregator endpoint
-Install ssl aggregator endpoint
-Install fluentd private key
-register fluentd firewal ports
+- Install fluentd plugins (server)
+- Set fluentd_port fact (non-ssl)
+- Set fluentd_port fact (ssl)
+- Install non-ssl aggregator endpoint
+- Install ssl aggregator endpoint
+- Install fluentd private key
+- register fluentd firewal ports
 
 
 ### Configuration
@@ -704,7 +704,7 @@ an Elasticsearch instance.
 
 ### Actions defined on the role
 
-Install fluentd->elasticsearch config
+- Install fluentd->elasticsearch config
 
 
 ### Configuration
@@ -789,12 +789,12 @@ messaging service.
 
 ### Actions defined on the role
 
-Install rabbitmq-server rpm
-Generate rabbitmq configuration
-Add plugin to manage rabbitmq
-Start the rabbitmq service
-Delete guest user on rabbitmq
-Register rabbitmq firewall ports
+- Install rabbitmq-server rpm
+- Generate rabbitmq configuration
+- Add plugin to manage rabbitmq
+- Start the rabbitmq service
+- Delete guest user on rabbitmq
+- Register rabbitmq firewall ports
 
 
 ## Chrony
@@ -807,9 +807,9 @@ can cause unexpected behaviors.
 
 ### Actions defined on the role
 
-Install chrony package
-Generate chrony configuration
-Activate chrony service
+- Install chrony package
+- Generate chrony configuration
+- Activate chrony service
 
 
 ### Configuration
@@ -869,11 +869,11 @@ configures the Uchiwa service.
 
 ### Actions defined on the role
 
-Install uchiwa
-Configure uchiwa
-Add uchiwa user to additional groups
-Ensure uchiwa is started and enabled at boot
-Register uchiwa firewal ports
+- Install uchiwa
+- Configure uchiwa
+- Add uchiwa user to additional groups
+- Ensure uchiwa is started and enabled at boot
+- Register uchiwa firewal ports
 
 
 ### Configuration
@@ -917,10 +917,10 @@ This role configures the Apache proxy for Uchiwa.
 
 ### Actions defined on the role
 
-Install uchiwa configuration for Apache
-Create uchiwa htpasswd file
-Secure uchiwa htpasswd file
-Configure default redirect
+- Install uchiwa configuration for Apache
+- Create uchiwa htpasswd file
+- Secure uchiwa htpasswd file
+- Configure default redirect
 
 
 ### Configuration
@@ -977,13 +977,13 @@ service.
 
 ### Actions defined on the role
 
-Install redis
-Set listen port at redis config
-Add bind interface at the redis config
-Ensure protected mode is enabled
-Set password
-Ensure redis is started and enabled at boot
-register redis firewall  port
+- Install redis
+- Set listen port at redis config
+- Add bind interface at the redis config
+- Ensure protected mode is enabled
+- Set password
+- Ensure redis is started and enabled at boot
+- register redis firewall  port
 
 
 ### Configuration
@@ -1018,13 +1018,13 @@ to collect, index, search, and analyze logs.
 
 ### Actions defined on the role
 
-Install java package
-Enable elasticsearch repository
-Install elasticsearch package
-Install elasticsearch service configuration
-Install elasticsearch configuration
-Activate elasticsearch service
-Register elasticsearch firewall ports
+- Install java package
+- Enable elasticsearch repository
+- Install elasticsearch package
+- Install elasticsearch service configuration
+- Install elasticsearch configuration
+- Activate elasticsearch service
+- Register elasticsearch firewall ports
 
 
 ### Configuration
@@ -1089,10 +1089,10 @@ This role manages the system firewall using either `iptables` or
 
 ### Actions defined on the role
 
-Determine if firewalld should be used
-Determine if iptables should be used
-Set use_firewalld fact
-Set use_iptables fact
+- Determine if firewalld should be used
+- Determine if iptables should be used
+- Set use_firewalld fact
+- Set use_iptables fact
 
 
 ### Configuration
@@ -1116,8 +1116,8 @@ other roles during the playbook run.
 
 ### Actions defined on the role
 
-Enable service ports via iptables
-Enable service ports via firewalld
+- Enable service ports via iptables
+- Enable service ports via firewalld
 
 
 # Integration with TripleO

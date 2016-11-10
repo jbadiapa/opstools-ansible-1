@@ -1,0 +1,700 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>Opstools-Ansible</title>
+  <style type="text/css">code{white-space: pre;}</style>
+</head>
+<body>
+<div id="header">
+<h1 class="title">Opstools-Ansible</h1>
+</div>
+<div id="TOC">
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#using-opstools-ansible">Using opstools-ansible</a><ul>
+<li><a href="#before-you-begin">Before you begin</a></li>
+<li><a href="#creating-an-inventory-file">Creating an inventory file</a></li>
+<li><a href="#create-a-configuration-file">Create a configuration file</a></li>
+<li><a href="#run-the-playbook">Run the playbook</a></li>
+</ul></li>
+<li><a href="#roles">Roles</a><ul>
+<li><a href="#sensucommon">Sensu/Common</a></li>
+<li><a href="#sensuserver">Sensu/Server</a></li>
+<li><a href="#httpd">Httpd</a></li>
+<li><a href="#prereqs">Prereqs</a></li>
+<li><a href="#prereqslibselinuxpython">Prereqs/Libselinuxpython</a></li>
+<li><a href="#prereqslibsemanagepython">Prereqs/Libsemanagepython</a></li>
+<li><a href="#opstoolsvhost">Opstoolsvhost</a></li>
+<li><a href="#repos">Repos</a></li>
+<li><a href="#reposopstools">Repos/Opstools</a></li>
+<li><a href="#reposrdo">Repos/Rdo</a></li>
+<li><a href="#kibana">Kibana</a></li>
+<li><a href="#kibanaproxy">Kibana/Proxy</a></li>
+<li><a href="#kibanaserver">Kibana/Server</a></li>
+<li><a href="#fluentd">Fluentd</a></li>
+<li><a href="#fluentdsyslog">Fluentd/Syslog</a></li>
+<li><a href="#fluentdserver">Fluentd/Server</a></li>
+<li><a href="#fluentdelasticsearch">Fluentd/Elasticsearch</a></li>
+<li><a href="#rabbitmq">Rabbitmq</a></li>
+<li><a href="#rabbitmqserver">Rabbitmq/Server</a></li>
+<li><a href="#chrony">Chrony</a></li>
+<li><a href="#rsyslog">Rsyslog</a></li>
+<li><a href="#uchiwa">Uchiwa</a></li>
+<li><a href="#uchiwaproxy">Uchiwa/Proxy</a></li>
+<li><a href="#redis">Redis</a></li>
+<li><a href="#redisserver">Redis/Server</a></li>
+<li><a href="#elasticsearch">Elasticsearch</a></li>
+<li><a href="#firewall">Firewall</a></li>
+<li><a href="#firewallcommit">Firewall/Commit</a></li>
+</ul></li>
+<li><a href="#integration-with-tripleo">Integration with TripleO</a></li>
+<li><a href="#contributing">Contributing</a></li>
+<li><a href="#license">License</a></li>
+</ul>
+</div>
+<!-- README.md is generated automatically from files and scripts in
+the docs/ directory.  If you are editing README.md directly your
+changes will be lost. -->
+<h1 id="overview">Overview</h1>
+<p>The <a href="https://github.com/larsks/opstools-ansible/">opstools-ansible</a> project is a collection of Ansible roles and playbooks that will configure an environment that provides centralized logging and analysis, availability monitoring, and performance monitoring.</p>
+<h1 id="using-opstools-ansible">Using opstools-ansible</h1>
+<h2 id="before-you-begin">Before you begin</h2>
+<p>Before using the opstools-ansible playbook, you will need to deploy one or more servers on which you will install the opstools services. These servers will need to be running either CentOS 7 or RHEL 7 (or a compatible distribution).</p>
+<p>These playbooks will install packages from a number of third-party repositories. The opstools-ansible developers are unable to address problems with the third party packaging (other than via working around problems in our playbooks).</p>
+<h2 id="creating-an-inventory-file">Creating an inventory file</h2>
+<p>Create an Ansible inventory file <code>inventory/hosts</code> that defines your hosts and maps them to host groups declared in <code>inventory/structure</code>. For example:</p>
+<pre><code>server1 ansible_host=192.0.2.7 ansible_user=centos ansible_become=true
+server2 ansible_host=192.0.2.15 ansible_user=centos ansible_become=true
+
+[am_hosts]
+server1
+
+[logging_hosts]
+server2</code></pre>
+<p>There are two high-level groups that can be used to control service placement:</p>
+<ul>
+<li><p><code>am_hosts</code>: The playbooks will install availability monitoring software (Sensu, Uchiwa, and support services) on these hosts.</p></li>
+<li><p><code>logging_hosts</code>: The playbooks will install the centralized logging stack (Elasticsearch, Kibana, Fluentd) on these hosts.</p></li>
+</ul>
+<p>While there are more groups defined in the <code>inventory/structure</code> file, use of those for more granular service placement is neither tested nor supported at this time.</p>
+<h2 id="create-a-configuration-file">Create a configuration file</h2>
+<p>Put any necessary configuration into an Ansible variables file (which is just a YAML document). For example, if you wanted to enable logging via SSL, you would need a configuration file that looked like this:</p>
+<pre><code>fluentd_use_ssl: true
+fluentd_shared_key: secret
+fluentd_ca_cert: |
+  -----BEGIN CERTIFICATE-----
+  ...
+  -----END CERTIFICATE-----
+fluentd_private_key:
+  -----BEGIN RSA PRIVATE KEY-----
+  ...
+  -----END RSA PRIVATE KEY-----</code></pre>
+<p>You don't need a configuration file if you wish to use default options.</p>
+<h2 id="run-the-playbook">Run the playbook</h2>
+<p>Once you have your inventory and configuration in place, you can run the playbook like this:</p>
+<pre><code>ansible-playbook playbook.yml -i inventory -e @config.yml</code></pre>
+<h1 id="roles">Roles</h1>
+<p>The following documentation is automatically extracted from the <code>roles</code> directory in this distribution.</p>
+<!-- automatically generated content will be placed here -->
+<h2 id="sensucommon">Sensu/Common</h2>
+<p><a href="http://sensuapp.org/">Sensu</a> is a distributed monitoring solution. This role installs the Sensu package and performs some basic configuration tasks.</p>
+<h3 id="actions-defined-on-the-role">Actions defined on the role</h3>
+<ul>
+<li>Enable Sensu repository</li>
+<li>Ensure repoquery command is available</li>
+<li>Check for obsolete sensu package</li>
+<li>Remove obsolete sensu package</li>
+<li>Install sensu</li>
+<li>Configure rabbitmq on sensu</li>
+</ul>
+<h3 id="configuration">Configuration</h3>
+<ul>
+<li><p><code>sensu_package_name</code> (default: <code>&quot;sensu&quot;</code>)</p>
+<p>Sensu package name.</p></li>
+<li><p><code>sensu_server_service_name</code> (default: <code>&quot;sensu-server&quot;</code>)</p>
+<p>Sensu server service name.</p></li>
+<li><p><code>sensu_api_service_name</code> (default: <code>&quot;sensu-api&quot;</code>)</p>
+<p>Sensu API service name.</p></li>
+<li><p><code>sensu_client_service_name</code> (default: <code>&quot;sensu-client&quot;</code>)</p>
+<p>Sensu client service name.</p></li>
+<li><p><code>sensu_config_path</code> (default: <code>&quot;/etc/sensu/conf.d&quot;</code>)</p>
+<p>Path to Sensu configuration directory.</p></li>
+<li><p><code>sensu_owner</code> (default: <code>&quot;sensu&quot;</code>)</p>
+<p>Owner of Sensu configuration files.</p></li>
+<li><p><code>sensu_group</code> (default: <code>&quot;sensu&quot;</code>)</p>
+<p>Group of Sensu configuration files.</p></li>
+<li><p><code>sensu_rabbitmq_server</code> (default: <code>&quot;localhost&quot;</code>)</p>
+<p>Address of RabbitMQ server to which Sensu should connect.</p></li>
+<li><p><code>sensu_rabbitmq_port</code> (default: <code>5672</code>)</p>
+<p>Port of the RabbitMQ server.</p></li>
+<li><p><code>sensu_rabbitmq_user</code> (default: <code>&quot;sensu&quot;</code>)</p>
+<p>Authenticate to RabbitMQ server as this user.</p></li>
+<li><p><code>sensu_rabbitmq_password</code> (default: <code>&quot;sensu&quot;</code>)</p>
+<p>Authenticate to RabbitMQ server with this password.</p></li>
+<li><p><code>sensu_rabbitmq_vhost</code> (default: <code>&quot;/sensu&quot;</code>)</p>
+<p>RabbitMQ vhost for use by Sensu.</p></li>
+</ul>
+<h2 id="sensuserver">Sensu/Server</h2>
+<p>This role is responsible for installing and configuring the Sensu server.</p>
+<h3 id="actions-defined-on-the-role-1">Actions defined on the role</h3>
+<ul>
+<li>Generate openstack auth args for oschecks</li>
+<li>Configure sensu</li>
+<li>Fix sensu_oschecks</li>
+<li>Create sensu vhost on rabbitmq</li>
+<li>Configure rabbitmq permissions</li>
+<li>Ensure correct ownership on directories</li>
+<li>Ensure sensu is started and enabled at boot</li>
+</ul>
+<h3 id="configuration-1">Configuration</h3>
+<ul>
+<li><p><code>sensu_api_bind</code> (default: <code>&quot;0.0.0.0&quot;</code>)</p>
+<p>Address on which Sensu should listen for connections.</p></li>
+<li><p><code>sensu_api_port</code> (default: <code>4567</code>)</p>
+<p>Port on which Sensu should listen.</p></li>
+<li><p><code>sensu_api_server</code> (default: <code>&quot;localhost&quot;</code>)</p>
+<p>Address to which clients should connect to contact the Sensu API.</p></li>
+<li><p><code>sensu_redis_server</code> (default: <code>&quot;127.0.0.1&quot;</code>)</p>
+<p>Address of the Redis server to which Sensu should connect.</p></li>
+<li><p><code>sensu_redis_port</code> (default: <code>&quot;{{ redis_listen_port }}&quot;</code>)</p>
+<p>Port on which the Redis server listens.</p></li>
+<li><p><code>sensu_redis_password</code> (default: <code>&quot;{{ redis_password }}&quot;</code>)</p>
+<p>Password for authenticating to Redis.</p></li>
+<li><p><code>sensu_enabled_oschecks</code> (default: <code>[&quot;check-ceilometer_api&quot;, &quot;check-ceph_df&quot;, &quot;check-ceph_health&quot;, &quot;check-cinder_api&quot;, &quot;check-cinder_volume&quot;, &quot;check-glance_api&quot;, &quot;check-keystone_api&quot;, &quot;check-neutron_api&quot;, &quot;check-nova_api&quot;, &quot;check-nova_instance&quot;]</code>)</p>
+<p>A list of enabled Sensu checks.</p></li>
+<li><p><code>oscheck_default_username</code> (default: <code>&quot;admin&quot;</code>)</p>
+<p>Username for openstack checks.</p></li>
+<li><p><code>oscheck_default_password</code> (default: <code>&quot;pass&quot;</code>)</p>
+<p>Password for openstack checks.</p></li>
+<li><p><code>oscheck_default_project_name</code> (default: <code>&quot;admin&quot;</code>)</p>
+<p>Project name (aka tenant) for openstack checks.</p></li>
+<li><p><code>oscheck_default_auth_url</code> (default: <code>&quot;http://controller:5000/v2.0&quot;</code>)</p>
+<p>Authentication URL (Keystone server) for openstack checks.</p></li>
+<li><p><code>oscheck_subscribers_cinder_volume</code> (default: <code>&quot;overcloud-cinder-volume&quot;</code>)</p>
+<p>Region name for openstack checks.</p></li>
+</ul>
+<h2 id="httpd">Httpd</h2>
+<p>This role installs the Apache web server and associated modules.</p>
+<h3 id="actions-defined-on-the-role-2">Actions defined on the role</h3>
+<ul>
+<li>Install httpd</li>
+<li>Install httpd modules</li>
+<li>Allow apache proxy connections</li>
+<li>Ensure httpd configuration directory exists</li>
+<li>Ensure httpd configuration parts directory exists</li>
+<li>Enable httpd service</li>
+</ul>
+<h3 id="configuration-2">Configuration</h3>
+<ul>
+<li><p><code>httpd_package_name</code> (default: <code>&quot;httpd&quot;</code>)</p>
+<p>Apache package name.</p></li>
+<li><p><code>httpd_service_name</code> (default: <code>&quot;httpd&quot;</code>)</p>
+<p>Apache service name.</p></li>
+<li><p><code>httpd_config_dir</code> (default: <code>&quot;/etc/httpd&quot;</code>)</p>
+<p>Path to Apache top-level configuration directory.</p></li>
+<li><p><code>httpd_config_parts_dir</code> (default: <code>&quot;{{ httpd_config_dir }}/conf.d&quot;</code>)</p>
+<p>Path to directory containing Apache configuration snippets.</p></li>
+<li><p><code>httpd_owner</code> (default: <code>&quot;root&quot;</code>)</p>
+<p>Owner of Apache configuration files.</p></li>
+<li><p><code>httpd_group</code> (default: <code>&quot;root&quot;</code>)</p>
+<p>Group of Apache configuration files.</p></li>
+<li><p><code>httpd_config_mode</code> (default: <code>420</code>)</p>
+<p>Mode of Apache configuration files.</p></li>
+<li><p><code>httpd_modules</code> (default: <code>[&quot;mod_ssl&quot;]</code>)</p>
+<p>Modules that will be installed along with Apache.</p></li>
+</ul>
+<h3 id="actions-defined-on-the-role-3">Actions defined on the role</h3>
+<ul>
+<li>Install collectd</li>
+<li>Install collectd plugins</li>
+<li>Place write_graphite-config</li>
+<li>Enable collectd</li>
+<li>Set collectd_tcp_network_connect</li>
+</ul>
+<h3 id="configuration-3">Configuration</h3>
+<ul>
+<li><code>collectd_service_name</code> (default: <code>&quot;collectd&quot;</code>)</li>
+</ul>
+<h2 id="prereqs">Prereqs</h2>
+<p>This role installs packages and configuration that are required for the successful operation of the opstools-ansible playbooks.</p>
+<h2 id="prereqslibselinuxpython">Prereqs/Libselinuxpython</h2>
+<p>This role installs the libselinux-python package (required by Ansible).</p>
+<h3 id="actions-defined-on-the-role-4">Actions defined on the role</h3>
+<ul>
+<li>Install libselinux python</li>
+</ul>
+<h3 id="configuration-4">Configuration</h3>
+<ul>
+<li><p><code>libselinux_python_package_name</code> (default: <code>&quot;libselinux-python&quot;</code>)</p>
+<p>libselinux-python package name</p></li>
+</ul>
+<h2 id="prereqslibsemanagepython">Prereqs/Libsemanagepython</h2>
+<p>This role installs the libsemanage-python package (required by Ansible).</p>
+<h3 id="actions-defined-on-the-role-5">Actions defined on the role</h3>
+<ul>
+<li>Install libsemanage python</li>
+</ul>
+<h3 id="configuration-5">Configuration</h3>
+<ul>
+<li><p><code>libsemanage_python_package_name</code> (default: <code>&quot;libsemanage-python&quot;</code>)</p>
+<p>libsemanage-python package name</p></li>
+</ul>
+<h2 id="opstoolsvhost">Opstoolsvhost</h2>
+<p>This role is responsible for configuring the Apache virtual host that will host Ops Tools services.</p>
+<h3 id="actions-defined-on-the-role-6">Actions defined on the role</h3>
+<ul>
+<li>Ensure opstools httpd config directory exists</li>
+<li>Install opstools httpd config file</li>
+<li>Register apache firewall ports</li>
+</ul>
+<h3 id="configuration-6">Configuration</h3>
+<ul>
+<li><p><code>opstools_apache_config_file</code> (default: <code>&quot;{{ httpd_config_parts_dir }}/opstools.conf&quot;</code>)</p>
+<p>Path to the Apache configuration file for the Ops Tools virtual host.</p></li>
+<li><p><code>opstools_apache_config_dir</code> (default: <code>&quot;{{ opstools_apache_config_file }}.d&quot;</code>)</p>
+<p>Path to the directory from which we will read additional configuration snipps inside the OpsTools virtual host context.</p></li>
+<li><p><code>opstools_apache_sslprotocol</code> (default: <code>&quot;all -SSLv2&quot;</code>)</p>
+<p>Apache SSL protocol settings.</p></li>
+<li><p><code>opstools_apache_sslciphersuite</code> (default: <code>&quot;HIGH:MEDIUM:!aNULL:!MD5:!SEED:!IDEA&quot;</code>)</p>
+<p>Apache SSL cipher suite settings.</p></li>
+<li><p><code>opstools_apache_sslcert</code> (default: <code>&quot;/etc/pki/tls/certs/localhost.crt&quot;</code>)</p>
+<p>Path to server SSL certificate.</p></li>
+<li><p><code>opstools_apache_sslkey</code> (default: <code>&quot;/etc/pki/tls/private/localhost.key&quot;</code>)</p>
+<p>Path to SSL private key.</p></li>
+<li><p><code>opstools_apache_http_port</code> (default: <code>80</code>)</p>
+<p>Port on which to listen for HTTP connections.</p></li>
+<li><p><code>opstools_apache_https_port</code> (default: <code>443</code>)</p>
+<p>Port on which to listen for HTTPS connections.</p></li>
+<li><p><code>opstools_default_redirect_file</code> (default: <code>&quot;\n{{ opstools_apache_config_dir }}/default_redirect.conf&quot;</code>)</p>
+<p>Path to configuration file that sets the default redirect for access to the root URL (<code>/</code>).</p></li>
+</ul>
+<h2 id="repos">Repos</h2>
+<p>This role is a collection of roles for configuring additional package repositories.</p>
+<h2 id="reposopstools">Repos/Opstools</h2>
+<p>This role enables the CentOS OpsTools SIG package repository.</p>
+<h3 id="actions-defined-on-the-role-7">Actions defined on the role</h3>
+<ul>
+<li>Install centos-opstools repository</li>
+</ul>
+<h3 id="configuration-7">Configuration</h3>
+<ul>
+<li><p><code>opstools_repo_config</code> (default: <code>&quot;https://raw.githubusercontent.com/centos-opstools/centos-release-opstools/master/CentOS-OpsTools.repo&quot;</code>)</p>
+<p>URL to the CentOS OpsTools SIG repository configuration file. yamllint disable-line rule:line-length</p></li>
+</ul>
+<h2 id="reposrdo">Repos/Rdo</h2>
+<p>This role configures access to the RDO package repository. This role is only used on CentOS hosts; it will not configure RDO repositories on RHEL systems.</p>
+<h3 id="actions-defined-on-the-role-8">Actions defined on the role</h3>
+<ul>
+<li>Install rdo repository configuration</li>
+</ul>
+<h3 id="configuration-8">Configuration</h3>
+<ul>
+<li><p><code>rdo_release</code> (default: <code>&quot;mitaka&quot;</code>)</p>
+<p>Specify which RDO release to use.</p></li>
+</ul>
+<h2 id="kibana">Kibana</h2>
+<p><a href="https://www.elastic.co/products/kibana">Kibana</a> is a web interface for querying an <a href="https://www.elastic.co/products/elasticsearch">Elasticsearch</a> data store.</p>
+<h3 id="configuration-9">Configuration</h3>
+<ul>
+<li><p><code>kibana_path</code> (default: <code>&quot;/kibana&quot;</code>)</p>
+<p>This is the URL path at which clients can access Kibana.</p></li>
+<li><p><code>kibana_package_name</code> (default: <code>&quot;kibana&quot;</code>)</p>
+<p>The Kibana package name.</p></li>
+<li><p><code>kibana_service_name</code> (default: <code>&quot;kibana&quot;</code>)</p>
+<p>The Kibana service name.</p></li>
+<li><p><code>kibana_config_dir</code> (default: <code>&quot;/opt/kibana/config&quot;</code>)</p>
+<p>Path to the Kibana configuration directory.</p></li>
+<li><p><code>kibana_config_file</code> (default: <code>&quot;{{ kibana_config_dir }}/kibana.yml&quot;</code>)</p>
+<p>Path to the Kibana configuration file.</p></li>
+<li><p><code>kibana_config_mode</code> (default: <code>420</code>)</p>
+<p>Mode for the Kibana configuration file.</p></li>
+<li><p><code>kibana_owner</code> (default: <code>&quot;kibana&quot;</code>)</p>
+<p>Owner for the Kibana configuration file.</p></li>
+<li><p><code>kibana_group</code> (default: <code>&quot;kibana&quot;</code>)</p>
+<p>Group for the Kibana configuration file.</p></li>
+<li><p><code>kibana_server_bind</code> (default: <code>&quot;localhost&quot;</code>)</p>
+<p>This is address to which Kibana should bind. Use &quot;0.0.0.0&quot; to listen on all interfaces; use &quot;localhost&quot; to allow access from the local system only.</p></li>
+<li><p><code>kibana_server_address</code> (default: <code>&quot;{{ kibana_server_bind }}&quot;</code>)</p>
+<p>This is the address to which clients should connect to access Kibana (we can't always use kibana_server_bind for that because 0.0.0.0 is not an address to which we can connect).</p></li>
+<li><p><code>kibana_server_port</code> (default: <code>5601</code>)</p>
+<p>The port on which Kibana should listen.</p></li>
+<li><p><code>kibana_elasticsearch_host</code> (default: <code>&quot;localhost&quot;</code>)</p>
+<p>Address of the Elasticsearch host.</p></li>
+<li><p><code>kibana_elasticsearch_port</code> (default: <code>9200</code>)</p>
+<p>Port on which Elasticsearch is listening.</p></li>
+<li><p><code>kibana_server_elasticsearch_url</code> (default: <code>&quot;\nhttp://{{ kibana_elasticsearch_host }}:{{ kibana_elasticsearch_port }}&quot;</code>)</p>
+<p>URL for Kibana to contact Elasticsearch.</p></li>
+</ul>
+<h2 id="kibanaproxy">Kibana/Proxy</h2>
+<p>This role configures the Apache proxy for Kibana.</p>
+<h3 id="actions-defined-on-the-role-9">Actions defined on the role</h3>
+<ul>
+<li>Install kibana configuration for Apache</li>
+<li>Create kibana htpasswd file</li>
+<li>Secure htpasswd file</li>
+<li>Configure default redirect</li>
+</ul>
+<h3 id="configuration-10">Configuration</h3>
+<ul>
+<li><p><code>kibana_proxy_dest</code> (default: <code>&quot;http://{{ kibana_server_bind }}:{{ kibana_server_port }}&quot;</code>)</p>
+<p>The URL for the Kibana service.</p></li>
+<li><p><code>kibana_proxy_htpasswd</code> (default: <code>&quot;/etc/httpd/conf/htpasswd-kibana&quot;</code>)</p>
+<p>Path to the htpasswd file for Kibana.</p></li>
+<li><p><code>kibana_proxy_user</code> (default: <code>&quot;operator&quot;</code>)</p>
+<p>Initial username for Kibana access to configure in the htpasswd file.</p></li>
+<li><p><code>kibana_proxy_pass</code> (default: <code>&quot;changeme&quot;</code>)</p>
+<p>Initial password for Kibana access to configure in the htpasswd file.</p></li>
+<li><p><code>kibana_httpd_conf</code> (default: <code>&quot;{{ opstools_apache_config_dir }}/kibana.conf&quot;</code>)</p>
+<p>Path to the Apache configuration file for Kibana.</p></li>
+</ul>
+<h2 id="kibanaserver">Kibana/Server</h2>
+<p>This role installs the Kibana web application. Configuration is taken from the main <code>kibana</code> role.</p>
+<h3 id="actions-defined-on-the-role-10">Actions defined on the role</h3>
+<ul>
+<li>Enable kibana repository</li>
+<li>Install kibana package</li>
+<li>Ensure kibana configuration directory exists</li>
+<li>Create kibana configuration file</li>
+<li>Enable kibana service</li>
+</ul>
+<h3 id="actions-defined-on-the-role-11">Actions defined on the role</h3>
+<h3 id="configuration-11">Configuration</h3>
+<ul>
+<li><code>grafana_package_name</code> (default: <code>&quot;grafana&quot;</code>)</li>
+</ul>
+<h2 id="fluentd">Fluentd</h2>
+<p><a href="http://www.fluentd.org/">Fluentd</a> is a log collection tool. It can collect logs from a variety of sources, filter them, and send them to a variety of destinations, including remote Fluentd instances.</p>
+<p>We use Fluentd to receive logs from remote Fluentd clients and deliver them to <a href="https://www.elastic.co/products/elasticsearch">Elasticsearch</a>.</p>
+<h3 id="actions-defined-on-the-role-12">Actions defined on the role</h3>
+<ul>
+<li>Install fluentd package</li>
+<li>Install fluentd plugins</li>
+<li>Ensure fluentd configuration directory exists</li>
+<li>Ensure fluentd config.d directory exists</li>
+<li>Create fluentd.conf</li>
+<li>Install fluentd certificate</li>
+<li>Activate fluentd service</li>
+</ul>
+<h3 id="configuration-12">Configuration</h3>
+<ul>
+<li><p><code>fluentd_package_name</code> (default: <code>&quot;fluentd&quot;</code>)</p>
+<p>Fluentd package name.</p></li>
+<li><p><code>fluentd_service_name</code> (default: <code>&quot;fluentd&quot;</code>)</p>
+<p>Fluentd service name.</p></li>
+<li><p><code>fluentd_config_dir</code> (default: <code>&quot;/etc/fluentd&quot;</code>)</p>
+<p>Path to the Fluentd configuration directory.</p></li>
+<li><p><code>fluentd_config_file</code> (default: <code>&quot;{{ fluentd_config_dir }}/fluent.conf&quot;</code>)</p>
+<p>Path to the main Fluentd configuration file.</p></li>
+<li><p><code>fluentd_config_parts_dir</code> (default: <code>&quot;{{ fluentd_config_dir }}/config.d&quot;</code>)</p>
+<p>Path to the directory containing Fluentd configuration snippets.</p></li>
+<li><p><code>fluentd_owner</code> (default: <code>&quot;fluentd&quot;</code>)</p>
+<p>User that will own Fluentd config files.</p></li>
+<li><p><code>fluentd_group</code> (default: <code>&quot;fluentd&quot;</code>)</p>
+<p>Group that will own Fluentd config files.</p></li>
+<li><p><code>fluentd_config_mode</code> (default: <code>420</code>)</p>
+<p>File mode for Fluentd configuration files.</p></li>
+<li><p><code>fluentd_plugins</code> (default: <code>[&quot;rubygem-fluent-plugin-secure-forward&quot;, &quot;rubygem-fluent-plugin-add&quot;]</code>)</p>
+<p>A list of Fluentd plugins to install along with Fluentd.</p></li>
+<li><p><code>fluentd_listen</code> (default: <code>false</code>)</p>
+<p>Set to true if Fluentd should listen for connections from remote Fluentd instances.</p></li>
+<li><p><code>fluentd_use_ssl</code> (default: <code>false</code>)</p>
+<p>Set to true if Fluentd should use SSL.</p></li>
+<li><p><code>fluentd_shared_key</code> (default: <code>null</code>)</p>
+<p>Shared secret key for SSL connections.</p></li>
+<li><p><code>fluentd_ca_cert_path</code> (default: <code>&quot;{{ fluentd_config_dir }}/ca_cert.pem&quot;</code>)</p>
+<p>Where to find the Fluentd server certificate authority certificate.</p></li>
+<li><p><code>fluentd_ca_cert</code> (default: <code>null</code>)</p>
+<p>Content of an x509 certificate that will be used to identify the server to clients.</p></li>
+<li><p><code>fluentd_private_key</code> (default: <code>null</code>)</p>
+<p>The key corresponding to the certificate in <code>fluentd_ca_cert</code>.</p></li>
+</ul>
+<h2 id="fluentdsyslog">Fluentd/Syslog</h2>
+<p>This roles installs the necessary configuration to send logs from the local syslog server to a Fluentd instance.</p>
+<h3 id="actions-defined-on-the-role-13">Actions defined on the role</h3>
+<ul>
+<li>Install fluentd rsyslog config</li>
+<li>Install fluentd syslog source</li>
+</ul>
+<h3 id="configuration-13">Configuration</h3>
+<ul>
+<li><p><code>fluentd_syslog_bind_address</code> (default: <code>&quot;127.0.0.1&quot;</code>)</p>
+<p>Address on which to listen for syslog messages.</p></li>
+<li><p><code>fluentd_syslog_port</code> (default: <code>5140</code>)</p>
+<p>Port on which to listen for syslog messages.</p></li>
+<li><p><code>fluentd_syslog_tag</code> (default: <code>&quot;system.messages&quot;</code>)</p>
+<p>Fluentd tag to apply to syslog messages.</p></li>
+</ul>
+<h2 id="fluentdserver">Fluentd/Server</h2>
+<p>This role configures a Fluentd listener that will listen for remote connections from other Fluentd clients.</p>
+<h3 id="actions-defined-on-the-role-14">Actions defined on the role</h3>
+<ul>
+<li>Install fluentd plugins (server)</li>
+<li>Set fluentd_port fact (non-ssl)</li>
+<li>Set fluentd_port fact (ssl)</li>
+<li>Install non-ssl aggregator endpoint</li>
+<li>Install ssl aggregator endpoint</li>
+<li>Install fluentd private key</li>
+<li>register fluentd firewal ports</li>
+</ul>
+<h3 id="configuration-14">Configuration</h3>
+<ul>
+<li><p><code>fluentd_server_plugins</code> (default: <code>[&quot;rubygem-fluent-plugin-elasticsearch&quot;]</code>)</p>
+<p>A list of plugins that will be installed on the fluentd server.</p></li>
+<li><p><code>fluentd_private_key_path</code> (default: <code>&quot;{{ fluentd_config_dir }}/ca_key.pem&quot;</code>)</p>
+<p>Path to the SSL certificate private key.</p></li>
+<li><p><code>fluentd_server_extraconfig</code> (default: <code>{}</code>)</p>
+<p>Additional fluentd configuration.</p></li>
+</ul>
+<h2 id="fluentdelasticsearch">Fluentd/Elasticsearch</h2>
+<p>This role contains contains configuration to send logs from Fluentd to an Elasticsearch instance.</p>
+<h3 id="actions-defined-on-the-role-15">Actions defined on the role</h3>
+<ul>
+<li>Install fluentd-&gt;elasticsearch config</li>
+</ul>
+<h3 id="configuration-15">Configuration</h3>
+<ul>
+<li><p><code>fluentd_elasticsearch_host</code> (default: <code>&quot;localhost&quot;</code>)</p>
+<p>Address of the Elasticsearch host.</p></li>
+<li><p><code>fluentd_elasticsearch_port</code> (default: <code>9200</code>)</p>
+<p>Port on which Elasticsearch is accepting connections.</p></li>
+<li><p><code>fluentd_elasticsearch_index</code> (default: <code>&quot;fluentd&quot;</code>)</p>
+<p>Elasticsearch index name.</p></li>
+<li><p><code>fluentd_elasticsearch_type</code> (default: <code>&quot;fluentd&quot;</code>)</p>
+<p>Elasticsearch index type.</p></li>
+<li><p><code>fluentd_elasticsearch_extraconfig</code> (default: <code>{}</code>)</p>
+<p>Additional Fluentd configuration to apply to the Elasticsearch output snippet.</p></li>
+</ul>
+<h2 id="rabbitmq">Rabbitmq</h2>
+<p><a href="https://www.rabbitmq.com/">RabbitMQ</a> is a reliable messaging service. It is used by <a href="http://sensuapp.org/">Sensu</a> agents to communicate with the Sensu server.</p>
+<h3 id="configuration-16">Configuration</h3>
+<ul>
+<li><p><code>rabbitmq_port</code> (default: <code>5672</code>)</p>
+<p>Port on which RabbitMQ should listen.</p></li>
+<li><p><code>rabbitmq_server</code> (default: <code>&quot;localhost&quot;</code>)</p>
+<p>Address to which clients should connect to the RabbitMQ service.</p></li>
+<li><p><code>rabbitmq_interface</code> (default: <code>[&quot;::&quot;]</code>)</p>
+<p>Addresses on which RabbitMQ should listen for connections.</p></li>
+<li><p><code>rabbitmq_package_name</code> (default: <code>&quot;rabbitmq-server&quot;</code>)</p>
+<p>RabbitMQ package name.</p></li>
+<li><p><code>rabbitmq_service_name</code> (default: <code>&quot;rabbitmq-server&quot;</code>)</p>
+<p>RabbitMQ service name.</p></li>
+<li><p><code>rabbitmq_default_user</code> (default: <code>&quot;guest&quot;</code>)</p>
+<p>Default RabbitMQ user.</p></li>
+<li><p><code>rabbitmq_config_file</code> (default: <code>&quot;/etc/rabbitmq/rabbitmq.config&quot;</code>)</p>
+<p>Path to RabbitMQ configuration file.</p></li>
+<li><p><code>rabbitmq_config_owner</code> (default: <code>&quot;rabbitmq&quot;</code>)</p>
+<p>Owner of RabbitMQ configuration files.</p></li>
+<li><p><code>rabbitmq_config_group</code> (default: <code>&quot;rabbitmq&quot;</code>)</p>
+<p>Group of RabbitMQ configuration files.</p></li>
+<li><p><code>rabbitmq_config_mode</code> (default: <code>&quot;0644&quot;</code>)</p>
+<p>Mode of RabbitMQ configuration files.</p></li>
+</ul>
+<h2 id="rabbitmqserver">Rabbitmq/Server</h2>
+<p>This role is responsible for installing and starting the RabbitMQ messaging service.</p>
+<h3 id="actions-defined-on-the-role-16">Actions defined on the role</h3>
+<ul>
+<li>Install rabbitmq-server rpm</li>
+<li>Generate rabbitmq configuration</li>
+<li>Add plugin to manage rabbitmq</li>
+<li>Start the rabbitmq service</li>
+<li>Delete guest user on rabbitmq</li>
+<li>Register rabbitmq firewall ports</li>
+</ul>
+<h2 id="chrony">Chrony</h2>
+<p>Installs and configures an NTP client (<a href="https://chrony.tuxfamily.org/">Chrony</a>) to ensure that the server keeps correct time. Clock skew between the server and clients can cause unexpected behaviors.</p>
+<h3 id="actions-defined-on-the-role-17">Actions defined on the role</h3>
+<ul>
+<li>Install chrony package</li>
+<li>Generate chrony configuration</li>
+<li>Activate chrony service</li>
+</ul>
+<h3 id="configuration-17">Configuration</h3>
+<ul>
+<li><p><code>chrony_package_name</code> (default: <code>&quot;chrony&quot;</code>)</p>
+<p>The name of the Chrony package.</p></li>
+<li><p><code>chrony_service_name</code> (default: <code>&quot;chronyd&quot;</code>)</p>
+<p>The name of the Chrony service.</p></li>
+<li><p><code>chrony_config_file</code> (default: <code>&quot;/etc/chrony.conf&quot;</code>)</p>
+<p>Path to the Chrony configuration file.</p></li>
+<li><p><code>chrony_driftfile</code> (default: <code>&quot;/var/lib/chrony/drift&quot;</code>)</p>
+<p>Path to the Chrony driftfile.</p></li>
+<li><p><code>chrony_logdir</code> (default: <code>&quot;/var/log/chrony&quot;</code>)</p>
+<p>Path to the Chrony log directory.</p></li>
+<li><p><code>chrony_pools</code> (default: <code>[&quot;pool.ntp.org iburst&quot;]</code>)</p>
+<p>A list of pools to use for synchronziation. Each item is provided' directly to the <code>pool</code> command.</p></li>
+<li><p><code>chrony_default_config</code> (default: <code>[&quot;makestep 1.0 3&quot;, &quot;rtcsync&quot;]</code>)</p>
+<p>A list of configuration items that will be included verbatim in the Chrony configuration.</p></li>
+</ul>
+<h2 id="rsyslog">Rsyslog</h2>
+<p>This is a utility role for use by other roles that wish to install rsyslog configuration snippets. It provides a handler that can be used to install rsyslogd. This role will not install or enable the rsyslog service.</p>
+<h3 id="configuration-18">Configuration</h3>
+<ul>
+<li><p><code>rsyslog_config_dir</code> (default: <code>&quot;/etc/rsyslog.d&quot;</code>)</p>
+<p>Path to the directory containing rsyslog configuration snippets.</p></li>
+</ul>
+<h2 id="uchiwa">Uchiwa</h2>
+<p><a href="https://uchiwa.io/">Uchiwa</a> is a web interface to <a href="http://sensuapp.org/">Sensu</a>. This role installs and configures the Uchiwa service.</p>
+<h3 id="actions-defined-on-the-role-18">Actions defined on the role</h3>
+<ul>
+<li>Install uchiwa</li>
+<li>Configure uchiwa</li>
+<li>Add uchiwa user to additional groups</li>
+<li>Ensure uchiwa is started and enabled at boot</li>
+<li>Register uchiwa firewal ports</li>
+</ul>
+<h3 id="configuration-19">Configuration</h3>
+<ul>
+<li><p><code>uchiwa_package_name</code> (default: <code>&quot;uchiwa&quot;</code>)</p>
+<p>Uchiwa package name.</p></li>
+<li><p><code>uchiwa_service_name</code> (default: <code>&quot;uchiwa&quot;</code>)</p>
+<p>Uchiwa service name.</p></li>
+<li><p><code>uchiwa_bind</code> (default: <code>&quot;127.0.0.1&quot;</code>)</p>
+<p>Address on which Uchiwa should listen for connections.</p></li>
+<li><p><code>uchiwa_server_address</code> (default: <code>&quot;localhost&quot;</code>)</p>
+<p>Address to which clients should connect to Uchiwa.</p></li>
+<li><p><code>uchiwa_port</code> (default: <code>3000</code>)</p>
+<p>Port on which Uchiwa should listen.</p></li>
+<li><p><code>uchiwa_refresh</code> (default: <code>5</code>)</p>
+<p>How often Uchiwa should refresh results.</p></li>
+<li><p><code>uchiwa_file_path</code> (default: <code>&quot;/etc/sensu/uchiwa.json&quot;</code>)</p>
+<p>Path to Uchiwa configuration file.</p></li>
+<li><p><code>sensu_datacenters</code> (default: <code>[{&quot;host&quot;: &quot;{{ sensu_api_server }}&quot;, &quot;name&quot;: &quot;{{ uchiwa_sensu_api_server_name }}&quot;, &quot;port&quot;: &quot;{{ sensu_api_port }}&quot;}]</code>)</p>
+<p>List of Sensu datacenters to which Uchiwa should connect.</p></li>
+</ul>
+<h2 id="uchiwaproxy">Uchiwa/Proxy</h2>
+<p>This role configures the Apache proxy for Uchiwa.</p>
+<h3 id="actions-defined-on-the-role-19">Actions defined on the role</h3>
+<ul>
+<li>Install uchiwa configuration for Apache</li>
+<li>Create uchiwa htpasswd file</li>
+<li>Secure uchiwa htpasswd file</li>
+<li>Configure default redirect</li>
+</ul>
+<h3 id="configuration-20">Configuration</h3>
+<ul>
+<li><p><code>uchiwa_proxy_dest</code> (default: <code>&quot;http://{{ uchiwa_bind }}:{{ uchiwa_port }}&quot;</code>)</p>
+<p>URL for backend Uchiwa service.</p></li>
+<li><p><code>uchiwa_proxy_htpasswd</code> (default: <code>&quot;/etc/httpd/conf/htpasswd-uchiwa&quot;</code>)</p>
+<p>Path to htpasswd file for controlling access to Uchiwa.</p></li>
+<li><p><code>uchiwa_proxy_user</code> (default: <code>&quot;operator&quot;</code>)</p>
+<p>User to create in htpasswd file.</p></li>
+<li><p><code>uchiwa_proxy_pass</code> (default: <code>&quot;changeme&quot;</code>)</p>
+<p>Password for user in htpasswd file.</p></li>
+<li><p><code>uchiwa_httpd_conf</code> (default: <code>&quot;{{ opstools_apache_config_dir }}/uchiwa.conf&quot;</code>)</p>
+<p>Path to the Apache configuration snippet for the Uchiwa proxy.</p></li>
+<li><p><code>uchiwa_path</code> (default: <code>&quot;/uchiwa&quot;</code>)</p>
+<p>URL path at which to host Uchiwa.</p></li>
+</ul>
+<h2 id="redis">Redis</h2>
+<p><a href="http://redis.io/">Redis</a> is an in-memory key/value store. <a href="http://sensuapp.org/">Sensu</a> uses Redis as a data-store for storing monitoring data (e.g. a client registry, current check results, current monitoring events, etc).</p>
+<h3 id="configuration-21">Configuration</h3>
+<ul>
+<li><p><code>redis_listen_port</code> (default: <code>6379</code>)</p>
+<p>Port on which Redis should listen.</p></li>
+<li><p><code>redis_password</code> (default: <code>&quot;kJadrW$s&amp;5.&quot;</code>)</p>
+<p>Password for accessing the Redis service.</p></li>
+</ul>
+<h2 id="redisserver">Redis/Server</h2>
+<p>This role is responsible for installing and configuring the Redis service.</p>
+<h3 id="actions-defined-on-the-role-20">Actions defined on the role</h3>
+<ul>
+<li>Install redis</li>
+<li>Set listen port at redis config</li>
+<li>Add bind interface at the redis config</li>
+<li>Ensure protected mode is enabled</li>
+<li>Set password</li>
+<li>Ensure redis is started and enabled at boot</li>
+<li>register redis firewall port</li>
+</ul>
+<h3 id="configuration-22">Configuration</h3>
+<ul>
+<li><p><code>redis_config_file</code> (default: <code>&quot;/etc/redis.conf&quot;</code>)</p>
+<p>Path to the Redis configuration file.</p></li>
+<li><p><code>redis_interface</code> (default: <code>[&quot;127.0.0.1&quot;]</code>)</p>
+<p>Addresses on which Redis should listen for connections.</p></li>
+<li><p><code>redis_package_name</code> (default: <code>&quot;redis&quot;</code>)</p>
+<p>Redis package name.</p></li>
+<li><p><code>redis_service_name</code> (default: <code>&quot;redis&quot;</code>)</p>
+<p>Redis service name.</p></li>
+<li><p><code>redis_owner</code> (default: <code>&quot;redis&quot;</code>)</p>
+<p>Owner of Redis configuration files.</p></li>
+</ul>
+<h2 id="elasticsearch">Elasticsearch</h2>
+<p><a href="https://www.elastic.co/products/elasticsearch">Elasticsearch</a> is a search and analytics engine used by Ops Tools to collect, index, search, and analyze logs.</p>
+<h3 id="actions-defined-on-the-role-21">Actions defined on the role</h3>
+<ul>
+<li>Install java package</li>
+<li>Enable elasticsearch repository</li>
+<li>Install elasticsearch package</li>
+<li>Install elasticsearch service configuration</li>
+<li>Install elasticsearch configuration</li>
+<li>Activate elasticsearch service</li>
+<li>Register elasticsearch firewall ports</li>
+</ul>
+<h3 id="configuration-23">Configuration</h3>
+<ul>
+<li><p><code>elasticsearch_package_name</code> (default: <code>&quot;elasticsearch&quot;</code>)</p>
+<p>Name of the Elasticsearch pacakge</p></li>
+<li><p><code>elasticsearch_service_name</code> (default: <code>&quot;elasticsearch&quot;</code>)</p>
+<p>Name of the Elasticsearch service.</p></li>
+<li><p><code>elasticsearch_config_dir</code> (default: <code>&quot;/etc/elasticsearch&quot;</code>)</p>
+<p>Path to the Elasticsearch configuration directory.</p></li>
+<li><p><code>elasticsearch_config_yml</code> (default: <code>&quot;{{ elasticsearch_config_dir }}/elasticsearch.yml&quot;</code>)</p>
+<p>Path to the main Elasticsearch configuration file.</p></li>
+<li><p><code>elasticsearch_sysconfig</code> (default: <code>{}</code>)</p>
+<p>Values that will be set in /etc/sysconfig/elasticsearch.</p></li>
+<li><p><code>elasticsearch_sysconfig_path</code> (default: <code>&quot;/etc/sysconfig/elasticsearch&quot;</code>)</p>
+<p>Path to Elasticsearch sysconfig file.</p></li>
+<li><p><code>elasticsearch_cluster_name</code> (default: <code>&quot;elasticsearch&quot;</code>)</p>
+<p>Elasticsearch cluster name.</p></li>
+<li><p><code>elasticsearch_port</code> (default: <code>9200</code>)</p>
+<p>Port on which Elasticsearch should listen.</p></li>
+<li><p><code>elasticsearch_interface</code> (default: <code>[&quot;127.0.0.1&quot;, &quot;::1&quot;]</code>)</p>
+<p>Addresses on which Elasticsearch should listten.</p></li>
+<li><p><code>elasticsearch_config</code> (default: <code>{&quot;cluster.name&quot;: &quot;{{ elasticsearch_cluster_name }}&quot;, &quot;network.host&quot;: &quot;{{ elasticsearch_interface }}&quot;, &quot;http.cors.enabled&quot;: true, &quot;http.port&quot;: &quot;{{ elasticsearch_port }}&quot;, &quot;http.cors.allow-origin&quot;: &quot;/.*/&quot;}</code>)</p>
+<p>Configuration data for Elasticsearch. The contents of this variable will be rendered as YAML in the file referenced by <code>elasticsearch_config_yml</code>.</p></li>
+<li><p><code>elasticsearch_extraconfig</code> (default: <code>{}</code>)</p>
+<p>Additional configuration data for Elasticsearch. Use this if you want to add options to <code>elasticsearch.yml</code> without replacing the defaults in <code>elasticsearch_config</code>.</p></li>
+<li><p><code>java_package_name</code> (default: <code>&quot;java&quot;</code>)</p>
+<p>Name of the package that provides a Java runtime environment.</p></li>
+</ul>
+<h2 id="firewall">Firewall</h2>
+<p>This role manages the system firewall using either <code>iptables</code> or <code>firewalld</code>.</p>
+<h3 id="actions-defined-on-the-role-22">Actions defined on the role</h3>
+<ul>
+<li>Determine if firewalld should be used</li>
+<li>Determine if iptables should be used</li>
+<li>Set use_firewalld fact</li>
+<li>Set use_iptables fact</li>
+</ul>
+<h3 id="configuration-24">Configuration</h3>
+<ul>
+<li><p><code>firewall_ports</code> (default: <code>[]</code>)</p>
+<p>A list of ports that should be exposed in the system firewall. Roles register ports by appending them to this list using the <code>set_fact</code> module.</p></li>
+<li><p><code>firewall_manage_rules</code> (default: <code>true</code>)</p>
+<p>Set this to False if you do not want the playbooks to make changes to the system firewall.</p></li>
+</ul>
+<h2 id="firewallcommit">Firewall/Commit</h2>
+<p>This role instantiates the firewall rules that were registered by other roles during the playbook run.</p>
+<h3 id="actions-defined-on-the-role-23">Actions defined on the role</h3>
+<ul>
+<li>Enable service ports via iptables</li>
+<li>Enable service ports via firewalld</li>
+</ul>
+<h1 id="integration-with-tripleo">Integration with TripleO</h1>
+<p>The <a href="https://wiki.openstack.org/wiki/TripleO">TripleO</a> installer for OpenStack includes support for Fluentd and Sensu clients. See <a href="docs/tripleo-integration.md">tripleo-integration.md</a> in the <code>docs/</code> subdirectory of this repository.</p>
+<h1 id="contributing">Contributing</h1>
+<p>If you encounter problems with or have suggestions about opstools-ansible, open an issue on our <a href="https://github.com/centos-opstools/opstools-ansible/issues">Github issue tracker</a>.</p>
+<p>If you would like to contribute code, documentation, or other changes to the project, please read the [docs/developers.md][] document located in the <code>docs/</code> subdirectory of this repository.</p>
+<h1 id="license">License</h1>
+<p>Copyright 2016 <a href="http://www.redhat.com/">Red Hat, Inc.</a></p>
+<p>Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License. You may obtain a copy of the License at</p>
+<ul>
+<li>http://www.apache.org/licenses/LICENSE-2.0</li>
+</ul>
+<p>Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.</p>
+</body>
+</html>
