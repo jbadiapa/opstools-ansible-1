@@ -102,6 +102,7 @@ fluentd_private_key:
 <h2 id="sensucommon">Sensu/Common</h2>
 <p><a href="http://sensuapp.org/">Sensu</a> is a distributed monitoring solution. This role installs the Sensu package and performs some basic configuration tasks.</p>
 <h3 id="actions-defined-on-the-role">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Enable Sensu repository</li>
 <li>Ensure repoquery command is available</li>
@@ -110,6 +111,7 @@ fluentd_private_key:
 <li>Install sensu</li>
 <li>Configure rabbitmq on sensu</li>
 </ul>
+</blockquote>
 <h3 id="configuration">Configuration</h3>
 <ul>
 <li><p><code>sensu_package_name</code> (default: <code>&quot;sensu&quot;</code>)</p>
@@ -140,6 +142,7 @@ fluentd_private_key:
 <h2 id="sensuserver">Sensu/Server</h2>
 <p>This role is responsible for installing and configuring the Sensu server.</p>
 <h3 id="actions-defined-on-the-role-1">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Generate openstack auth args for oschecks</li>
 <li>Configure sensu</li>
@@ -149,6 +152,7 @@ fluentd_private_key:
 <li>Ensure correct ownership on directories</li>
 <li>Ensure sensu is started and enabled at boot</li>
 </ul>
+</blockquote>
 <h3 id="configuration-1">Configuration</h3>
 <ul>
 <li><p><code>sensu_api_bind</code> (default: <code>&quot;0.0.0.0&quot;</code>)</p>
@@ -179,6 +183,7 @@ fluentd_private_key:
 <h2 id="httpd">Httpd</h2>
 <p>This role installs the Apache web server and associated modules.</p>
 <h3 id="actions-defined-on-the-role-2">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Install httpd</li>
 <li>Install httpd modules</li>
@@ -187,6 +192,7 @@ fluentd_private_key:
 <li>Ensure httpd configuration parts directory exists</li>
 <li>Enable httpd service</li>
 </ul>
+</blockquote>
 <h3 id="configuration-2">Configuration</h3>
 <ul>
 <li><p><code>httpd_package_name</code> (default: <code>&quot;httpd&quot;</code>)</p>
@@ -207,6 +213,7 @@ fluentd_private_key:
 <p>Modules that will be installed along with Apache.</p></li>
 </ul>
 <h3 id="actions-defined-on-the-role-3">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Install collectd</li>
 <li>Install collectd plugins</li>
@@ -214,6 +221,7 @@ fluentd_private_key:
 <li>Enable collectd</li>
 <li>Set collectd_tcp_network_connect</li>
 </ul>
+</blockquote>
 <h3 id="configuration-3">Configuration</h3>
 <ul>
 <li><code>collectd_service_name</code> (default: <code>&quot;collectd&quot;</code>)</li>
@@ -223,9 +231,11 @@ fluentd_private_key:
 <h2 id="prereqslibselinuxpython">Prereqs/Libselinuxpython</h2>
 <p>This role installs the libselinux-python package (required by Ansible).</p>
 <h3 id="actions-defined-on-the-role-4">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Install libselinux python</li>
 </ul>
+</blockquote>
 <h3 id="configuration-4">Configuration</h3>
 <ul>
 <li><p><code>libselinux_python_package_name</code> (default: <code>&quot;libselinux-python&quot;</code>)</p>
@@ -234,9 +244,11 @@ fluentd_private_key:
 <h2 id="prereqslibsemanagepython">Prereqs/Libsemanagepython</h2>
 <p>This role installs the libsemanage-python package (required by Ansible).</p>
 <h3 id="actions-defined-on-the-role-5">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Install libsemanage python</li>
 </ul>
+</blockquote>
 <h3 id="configuration-5">Configuration</h3>
 <ul>
 <li><p><code>libsemanage_python_package_name</code> (default: <code>&quot;libsemanage-python&quot;</code>)</p>
@@ -245,11 +257,13 @@ fluentd_private_key:
 <h2 id="opstoolsvhost">Opstoolsvhost</h2>
 <p>This role is responsible for configuring the Apache virtual host that will host Ops Tools services.</p>
 <h3 id="actions-defined-on-the-role-6">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Ensure opstools httpd config directory exists</li>
 <li>Install opstools httpd config file</li>
 <li>Register apache firewall ports</li>
 </ul>
+</blockquote>
 <h3 id="configuration-6">Configuration</h3>
 <ul>
 <li><p><code>opstools_apache_config_file</code> (default: <code>&quot;{{ httpd_config_parts_dir }}/opstools.conf&quot;</code>)</p>
@@ -276,9 +290,11 @@ fluentd_private_key:
 <h2 id="reposopstools">Repos/Opstools</h2>
 <p>This role enables the CentOS OpsTools SIG package repository.</p>
 <h3 id="actions-defined-on-the-role-7">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Install centos-opstools repository</li>
 </ul>
+</blockquote>
 <h3 id="configuration-7">Configuration</h3>
 <ul>
 <li><p><code>opstools_repo_config</code> (default: <code>&quot;https://raw.githubusercontent.com/centos-opstools/centos-release-opstools/master/CentOS-OpsTools.repo&quot;</code>)</p>
@@ -287,9 +303,11 @@ fluentd_private_key:
 <h2 id="reposrdo">Repos/Rdo</h2>
 <p>This role configures access to the RDO package repository. This role is only used on CentOS hosts; it will not configure RDO repositories on RHEL systems.</p>
 <h3 id="actions-defined-on-the-role-8">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Install rdo repository configuration</li>
 </ul>
+</blockquote>
 <h3 id="configuration-8">Configuration</h3>
 <ul>
 <li><p><code>rdo_release</code> (default: <code>&quot;mitaka&quot;</code>)</p>
@@ -331,12 +349,14 @@ fluentd_private_key:
 <h2 id="kibanaproxy">Kibana/Proxy</h2>
 <p>This role configures the Apache proxy for Kibana.</p>
 <h3 id="actions-defined-on-the-role-9">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Install kibana configuration for Apache</li>
 <li>Create kibana htpasswd file</li>
 <li>Secure htpasswd file</li>
 <li>Configure default redirect</li>
 </ul>
+</blockquote>
 <h3 id="configuration-10">Configuration</h3>
 <ul>
 <li><p><code>kibana_proxy_dest</code> (default: <code>&quot;http://{{ kibana_server_bind }}:{{ kibana_server_port }}&quot;</code>)</p>
@@ -353,6 +373,7 @@ fluentd_private_key:
 <h2 id="kibanaserver">Kibana/Server</h2>
 <p>This role installs the Kibana web application. Configuration is taken from the main <code>kibana</code> role.</p>
 <h3 id="actions-defined-on-the-role-10">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Enable kibana repository</li>
 <li>Install kibana package</li>
@@ -360,6 +381,7 @@ fluentd_private_key:
 <li>Create kibana configuration file</li>
 <li>Enable kibana service</li>
 </ul>
+</blockquote>
 <h3 id="actions-defined-on-the-role-11">Actions defined on the role</h3>
 <h3 id="configuration-11">Configuration</h3>
 <ul>
@@ -369,6 +391,7 @@ fluentd_private_key:
 <p><a href="http://www.fluentd.org/">Fluentd</a> is a log collection tool. It can collect logs from a variety of sources, filter them, and send them to a variety of destinations, including remote Fluentd instances.</p>
 <p>We use Fluentd to receive logs from remote Fluentd clients and deliver them to <a href="https://www.elastic.co/products/elasticsearch">Elasticsearch</a>.</p>
 <h3 id="actions-defined-on-the-role-12">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Install fluentd package</li>
 <li>Install fluentd plugins</li>
@@ -378,6 +401,7 @@ fluentd_private_key:
 <li>Install fluentd certificate</li>
 <li>Activate fluentd service</li>
 </ul>
+</blockquote>
 <h3 id="configuration-12">Configuration</h3>
 <ul>
 <li><p><code>fluentd_package_name</code> (default: <code>&quot;fluentd&quot;</code>)</p>
@@ -414,10 +438,12 @@ fluentd_private_key:
 <h2 id="fluentdsyslog">Fluentd/Syslog</h2>
 <p>This roles installs the necessary configuration to send logs from the local syslog server to a Fluentd instance.</p>
 <h3 id="actions-defined-on-the-role-13">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Install fluentd rsyslog config</li>
 <li>Install fluentd syslog source</li>
 </ul>
+</blockquote>
 <h3 id="configuration-13">Configuration</h3>
 <ul>
 <li><p><code>fluentd_syslog_bind_address</code> (default: <code>&quot;127.0.0.1&quot;</code>)</p>
@@ -430,6 +456,7 @@ fluentd_private_key:
 <h2 id="fluentdserver">Fluentd/Server</h2>
 <p>This role configures a Fluentd listener that will listen for remote connections from other Fluentd clients.</p>
 <h3 id="actions-defined-on-the-role-14">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Install fluentd plugins (server)</li>
 <li>Set fluentd_port fact (non-ssl)</li>
@@ -439,6 +466,7 @@ fluentd_private_key:
 <li>Install fluentd private key</li>
 <li>register fluentd firewal ports</li>
 </ul>
+</blockquote>
 <h3 id="configuration-14">Configuration</h3>
 <ul>
 <li><p><code>fluentd_server_plugins</code> (default: <code>[&quot;rubygem-fluent-plugin-elasticsearch&quot;]</code>)</p>
@@ -451,9 +479,11 @@ fluentd_private_key:
 <h2 id="fluentdelasticsearch">Fluentd/Elasticsearch</h2>
 <p>This role contains contains configuration to send logs from Fluentd to an Elasticsearch instance.</p>
 <h3 id="actions-defined-on-the-role-15">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Install fluentd-&gt;elasticsearch config</li>
 </ul>
+</blockquote>
 <h3 id="configuration-15">Configuration</h3>
 <ul>
 <li><p><code>fluentd_elasticsearch_host</code> (default: <code>&quot;localhost&quot;</code>)</p>
@@ -495,6 +525,7 @@ fluentd_private_key:
 <h2 id="rabbitmqserver">Rabbitmq/Server</h2>
 <p>This role is responsible for installing and starting the RabbitMQ messaging service.</p>
 <h3 id="actions-defined-on-the-role-16">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Install rabbitmq-server rpm</li>
 <li>Generate rabbitmq configuration</li>
@@ -503,14 +534,17 @@ fluentd_private_key:
 <li>Delete guest user on rabbitmq</li>
 <li>Register rabbitmq firewall ports</li>
 </ul>
+</blockquote>
 <h2 id="chrony">Chrony</h2>
 <p>Installs and configures an NTP client (<a href="https://chrony.tuxfamily.org/">Chrony</a>) to ensure that the server keeps correct time. Clock skew between the server and clients can cause unexpected behaviors.</p>
 <h3 id="actions-defined-on-the-role-17">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Install chrony package</li>
 <li>Generate chrony configuration</li>
 <li>Activate chrony service</li>
 </ul>
+</blockquote>
 <h3 id="configuration-17">Configuration</h3>
 <ul>
 <li><p><code>chrony_package_name</code> (default: <code>&quot;chrony&quot;</code>)</p>
@@ -538,6 +572,7 @@ fluentd_private_key:
 <h2 id="uchiwa">Uchiwa</h2>
 <p><a href="https://uchiwa.io/">Uchiwa</a> is a web interface to <a href="http://sensuapp.org/">Sensu</a>. This role installs and configures the Uchiwa service.</p>
 <h3 id="actions-defined-on-the-role-18">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Install uchiwa</li>
 <li>Configure uchiwa</li>
@@ -545,6 +580,7 @@ fluentd_private_key:
 <li>Ensure uchiwa is started and enabled at boot</li>
 <li>Register uchiwa firewal ports</li>
 </ul>
+</blockquote>
 <h3 id="configuration-19">Configuration</h3>
 <ul>
 <li><p><code>uchiwa_package_name</code> (default: <code>&quot;uchiwa&quot;</code>)</p>
@@ -567,12 +603,14 @@ fluentd_private_key:
 <h2 id="uchiwaproxy">Uchiwa/Proxy</h2>
 <p>This role configures the Apache proxy for Uchiwa.</p>
 <h3 id="actions-defined-on-the-role-19">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Install uchiwa configuration for Apache</li>
 <li>Create uchiwa htpasswd file</li>
 <li>Secure uchiwa htpasswd file</li>
 <li>Configure default redirect</li>
 </ul>
+</blockquote>
 <h3 id="configuration-20">Configuration</h3>
 <ul>
 <li><p><code>uchiwa_proxy_dest</code> (default: <code>&quot;http://{{ uchiwa_bind }}:{{ uchiwa_port }}&quot;</code>)</p>
@@ -600,6 +638,7 @@ fluentd_private_key:
 <h2 id="redisserver">Redis/Server</h2>
 <p>This role is responsible for installing and configuring the Redis service.</p>
 <h3 id="actions-defined-on-the-role-20">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Install redis</li>
 <li>Set listen port at redis config</li>
@@ -609,6 +648,7 @@ fluentd_private_key:
 <li>Ensure redis is started and enabled at boot</li>
 <li>register redis firewall port</li>
 </ul>
+</blockquote>
 <h3 id="configuration-22">Configuration</h3>
 <ul>
 <li><p><code>redis_config_file</code> (default: <code>&quot;/etc/redis.conf&quot;</code>)</p>
@@ -625,6 +665,7 @@ fluentd_private_key:
 <h2 id="elasticsearch">Elasticsearch</h2>
 <p><a href="https://www.elastic.co/products/elasticsearch">Elasticsearch</a> is a search and analytics engine used by Ops Tools to collect, index, search, and analyze logs.</p>
 <h3 id="actions-defined-on-the-role-21">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Install java package</li>
 <li>Enable elasticsearch repository</li>
@@ -634,6 +675,7 @@ fluentd_private_key:
 <li>Activate elasticsearch service</li>
 <li>Register elasticsearch firewall ports</li>
 </ul>
+</blockquote>
 <h3 id="configuration-23">Configuration</h3>
 <ul>
 <li><p><code>elasticsearch_package_name</code> (default: <code>&quot;elasticsearch&quot;</code>)</p>
@@ -664,12 +706,14 @@ fluentd_private_key:
 <h2 id="firewall">Firewall</h2>
 <p>This role manages the system firewall using either <code>iptables</code> or <code>firewalld</code>.</p>
 <h3 id="actions-defined-on-the-role-22">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Determine if firewalld should be used</li>
 <li>Determine if iptables should be used</li>
 <li>Set use_firewalld fact</li>
 <li>Set use_iptables fact</li>
 </ul>
+</blockquote>
 <h3 id="configuration-24">Configuration</h3>
 <ul>
 <li><p><code>firewall_ports</code> (default: <code>[]</code>)</p>
@@ -680,10 +724,12 @@ fluentd_private_key:
 <h2 id="firewallcommit">Firewall/Commit</h2>
 <p>This role instantiates the firewall rules that were registered by other roles during the playbook run.</p>
 <h3 id="actions-defined-on-the-role-23">Actions defined on the role</h3>
+<blockquote>
 <ul>
 <li>Enable service ports via iptables</li>
 <li>Enable service ports via firewalld</li>
 </ul>
+</blockquote>
 <h1 id="integration-with-tripleo">Integration with TripleO</h1>
 <p>The <a href="https://wiki.openstack.org/wiki/TripleO">TripleO</a> installer for OpenStack includes support for Fluentd and Sensu clients. See <a href="docs/tripleo-integration.md">tripleo-integration.md</a> in the <code>docs/</code> subdirectory of this repository.</p>
 <h1 id="contributing">Contributing</h1>
