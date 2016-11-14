@@ -67,6 +67,8 @@ $PM_HOST
 $CONNECTION
 EOF
 
+echo "The file ~/.opstools.hosts was created"
+
 else
   #Executes the playbook to install the opstools
   ansible-playbook -i /usr/share/opstools-ansible/inventory -i ~/.opstools.hosts /usr/share/opstools-ansible/playbook.yml
