@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 #Help info
 if [ "-h" == $1 ]; then
   echo 
